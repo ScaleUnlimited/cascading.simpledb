@@ -1,0 +1,16 @@
+.DS_Store
+.classpath
+.project
+.settings/
+.local.*
+build
+target
+build-eclipse
+src/gen
+build.sh
+*.iml
+*.dot
+*.hprof
+trash
+private
+junit*.properties

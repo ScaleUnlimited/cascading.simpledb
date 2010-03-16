@@ -1,0 +1,5 @@
+# Fill in these values with valid AWS credentials before running the
+# integration tests.
+
+access-key-id=
+secret-access-key=
