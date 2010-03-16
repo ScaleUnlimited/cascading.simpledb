@@ -10,6 +10,10 @@
 	<version>1.0-SNAPSHOT</version>
 	<description>Cascading Scheme &amp; Tap for Amazon's SimpleDB.</description>
 	<url>http://github.com/bixolabs/cascading.simpledb</url>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>http://github.com/bixolabs/cascading.simpledb/issues</url>
+	</issueManagement>
 	<scm>
 		<connection>scm:git:git://github.com/bixolabs/cascading.simpledb.git</connection>
 		<developerConnection>TransPac Software, Inc.</developerConnection>
