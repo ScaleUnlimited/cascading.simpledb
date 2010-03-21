@@ -22,6 +22,7 @@ import java.util.Map;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.log4j.Logger;
 
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
@@ -30,6 +31,7 @@ import cascading.tuple.TupleEntry;
 import com.bixolabs.aws.SimpleDB;
 
 public class SimpleDBRecordReader implements RecordReader<NullWritable, Tuple> {
+    private static final Logger LOGGER = Logger.getLogger(SimpleDBRecordReader.class);
 
     private String _shardName;
     private Fields _schemeFields;
@@ -40,7 +42,6 @@ public class SimpleDBRecordReader implements RecordReader<NullWritable, Tuple> {
     private SimpleDB _sdb;
     private long _pos;
     private long _length;
-    private int _totalItems;
     private String _nextToken;
     private List<Map<String, String[]>> _curItems;
     private int _curItemIndex;
@@ -60,7 +61,6 @@ public class SimpleDBRecordReader implements RecordReader<NullWritable, Tuple> {
         _nextToken = null;
         _curItems = null;
         
-        _totalItems = 0;
         _pos = 0;
         _length = split.getLength();
     }
@@ -110,13 +110,24 @@ public class SimpleDBRecordReader implements RecordReader<NullWritable, Tuple> {
                     selectStr += String.format(" limit %d", _selectLimit);
                 }
                 
+                LOGGER.trace(String.format("Making select request: %s", selectStr));
+                
                 _curItems = _sdb.select(selectStr, _nextToken);
                 _curItemIndex = 0;
-                _totalItems += _curItems.size();
                 
-                // If we've reached our limit, ignore any more matches.
-                if ((_selectLimit != SimpleDBUtils.NO_SELECT_LIMIT) && (_totalItems >= _selectLimit)) {
-                    _nextToken = null;
+                // If we're looping, we need to reduce our limit each time.
+                if (_selectLimit != SimpleDBUtils.NO_SELECT_LIMIT) {
+                    // Just for safety, trim what we get back to be no more than our limit.
+                    if (_curItems.size() > _selectLimit) {
+                        _curItems.subList(_selectLimit, _curItems.size()).clear();
+                    }
+                    
+                    _selectLimit -= _curItems.size();
+                    if (_selectLimit > 0) {
+                        _nextToken = _sdb.getLastToken();
+                    } else {
+                        _nextToken = null;
+                    }
                 } else {
                     _nextToken = _sdb.getLastToken();
                 }
