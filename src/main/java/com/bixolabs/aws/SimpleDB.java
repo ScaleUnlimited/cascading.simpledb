@@ -42,7 +42,11 @@ import java.util.TreeMap;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.log4j.Logger;
+
 public class SimpleDB {
+    private static final Logger LOGGER = Logger.getLogger(SimpleDB.class);
+    
     public static final String TIMESTAMP_METADATA = "Timestamp";
     
     private static final String SIGNATURE_METHOD = "HmacSHA1";
@@ -192,12 +196,13 @@ public class SimpleDB {
     
     private Mac _mac = null;
     
+    // TODO KKr - return this data from requests, versus caching (in a non-threadable manner).
     private String  lastRequestId = null;
     private String  lastBoxUsage = null;
     private String  lastToken = null;
 
     public SimpleDB(String awsId, String secretKey) {
-        this("sdb.amazonaws.com", awsId, secretKey);
+        this(DEFAULT_HOST, awsId, secretKey);
     }
     
     public SimpleDB(String awsId, String secretKey, IHttpHandler httpHandler) {
@@ -625,12 +630,17 @@ public class SimpleDB {
     }
 
     /*
-     * Retrieve the standard Response elements
+     * Retrieve the standard Response elements. Synchronize it so that in multithreaded
+     * mode we can at least log a consistent set of values from the response.
      */
-    private void processResponse(String resp){
+    private synchronized void processResponse(String resp){
         lastRequestId = _xmlParser.getElement(resp, "RequestId");
         lastBoxUsage = _xmlParser.getElement(resp, "BoxUsage");
         lastToken = _xmlParser.getElement(resp, "NextToken");
+        
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(String.format("Request %s used %s and returned %s", lastRequestId, lastBoxUsage, lastToken));
+        }
     }
     
     private String getAWSErrorCode(String response) {
