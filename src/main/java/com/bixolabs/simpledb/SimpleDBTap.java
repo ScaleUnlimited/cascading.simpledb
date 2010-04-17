@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -57,7 +58,8 @@ public class SimpleDBTap extends Tap {
     private String _secretAccessKey;
     private String _baseDomainName;
     private int _numShards;
-
+    private SinkMode _sinkMode;
+    
     private transient SimpleDB _sdb;
 
     public SimpleDBTap(SimpleDBScheme scheme, String accessKeyId, String secretAccessKey, String baseDomainName, int numShards) {
@@ -71,6 +73,7 @@ public class SimpleDBTap extends Tap {
         _secretAccessKey = secretAccessKey;
         _baseDomainName = baseDomainName;
         _numShards = numShards;
+        _sinkMode = sinkMode;
     }
 
     public Path getPath() {
@@ -260,6 +263,8 @@ public class SimpleDBTap extends Tap {
         result = prime * result + ((_accessKeyId == null) ? 0 : _accessKeyId.hashCode());
         result = prime * result + ((_baseDomainName == null) ? 0 : _baseDomainName.hashCode());
         result = prime * result + ((_secretAccessKey == null) ? 0 : _secretAccessKey.hashCode());
+        result = prime * result + ((getScheme() == null) ? 0 : getScheme().hashCode());
+        result = prime * result + _sinkMode.hashCode();
         return result;
     }
 
@@ -287,6 +292,16 @@ public class SimpleDBTap extends Tap {
                 return false;
         } else if (!_secretAccessKey.equals(other._secretAccessKey))
             return false;
+        if (_sinkMode != other._sinkMode) {
+            return false;
+        }
+        if (getScheme() == null) {
+            if (other.getScheme() != null) {
+                return false;
+            }
+        } else if (!getScheme().equals(other.getScheme())) {
+            return false;
+        }
         return true;
     }
     

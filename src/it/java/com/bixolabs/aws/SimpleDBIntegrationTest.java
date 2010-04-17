@@ -32,7 +32,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SimpleDBTest {
+public class SimpleDBIntegrationTest {
 
     private SimpleDB _sdb;
     

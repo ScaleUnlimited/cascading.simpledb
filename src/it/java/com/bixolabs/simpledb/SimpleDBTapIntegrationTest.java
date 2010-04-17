@@ -44,7 +44,7 @@ import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
 
 
-public class SimpleDBTapTest {
+public class SimpleDBTapIntegrationTest {
 
     @After
     public void tearDown() {
