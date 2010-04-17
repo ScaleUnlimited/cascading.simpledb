@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -98,7 +100,6 @@ public class SimpleDBTest {
     public void testErrorHandling() throws Exception {
 
         try {
-            _sdb.deleteDomain(TestUtils.TEST_DOMAIN_NAME);
             _sdb.getAttributes(TestUtils.TEST_DOMAIN_NAME, "item1");
             fail("Exception not thrown");
         } catch (AWSException e) {
@@ -168,6 +169,44 @@ public class SimpleDBTest {
         assertEquals(1, result.size());
         String count = result.get(0).get("Count")[0];
         assertEquals("1", count);
+    }
+    
+    @Test
+    public void testConditionalPut() throws Exception {
+        final String domainName = TestUtils.TEST_DOMAIN_NAME;
+        _sdb.createDomain(domainName);
+
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("attr1", "item1-attr1-value1");
+        _sdb.putAttributes(TestUtils.TEST_DOMAIN_NAME, "item1", attributes);
+        
+        String[] result = _sdb.getAttribute(TestUtils.TEST_DOMAIN_NAME, "item1", "attr1", true);
+        assertEquals(1, result.length);
+        assertEquals("item1-attr1-value1", result[0]);
+
+        attributes.put("attr1", "item1-attr1-value2");
+        Set<String> replaceAttrs = new HashSet<String>();
+        replaceAttrs.add("attr1");
+        
+        _sdb.putAttributes(TestUtils.TEST_DOMAIN_NAME, "item1", attributes, replaceAttrs, "attr1", "item1-attr1-value1", true);
+        
+        result = _sdb.getAttribute(TestUtils.TEST_DOMAIN_NAME, "item1", "attr1", true);
+        assertEquals(1, result.length);
+        assertEquals("item1-attr1-value2", result[0]);
+
+        // Now try to change to value3, but this time say that the attribute can't exist.
+        attributes.put("attr1", "item1-attr1-value3");
+        try {
+            _sdb.putAttributes(TestUtils.TEST_DOMAIN_NAME, "item1", attributes, replaceAttrs, "attr1", null, false);
+            fail("Should have failed");
+        } catch (AWSException e) {
+            assertEquals("ConditionalCheckFailed", e.getAWSErrorCode());
+        }
+        
+        // Should still have the old value.
+        result = _sdb.getAttribute(TestUtils.TEST_DOMAIN_NAME, "item1", "attr1", true);
+        assertEquals(1, result.length);
+        assertEquals("item1-attr1-value2", result[0]);
     }
     
     @Test

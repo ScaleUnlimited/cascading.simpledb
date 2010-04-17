@@ -345,7 +345,7 @@ public class SimpleDB {
      * yields better throughput.
      */
     public String batchPutAttributes(String domainName, Map<String, Map<String,String>> itemValues) throws AWSException, IOException, InterruptedException {
-        return batchPutAttributes(domainName, itemValues, new HashMap<String, Set<String>>());
+        return batchPutAttributes(domainName, itemValues, null);
     }
     
     public String batchPutAttributes(String domainName, Map<String, Map<String,String>> itemValues, Map<String, Set<String>> itemReplaces) throws AWSException, IOException, InterruptedException  {
@@ -356,18 +356,21 @@ public class SimpleDB {
         for (Map.Entry<String, Map<String,String>> itemMap : itemValues.entrySet()) {
             
             int count = 0;
+            String itemName = itemMap.getKey();
             Map<String,String> map = itemMap.getValue();
-            Set<String> replace = itemReplaces.get(itemMap.getKey());
+            Set<String> replace = itemReplaces == null ? null : itemReplaces.get(itemName);
             
-            uriParams.put("Item." + itemCount + ".ItemName", itemMap.getKey());
+            uriParams.put("Item." + itemCount + ".ItemName", itemName);
             
             for (Map.Entry<String, String> x : map.entrySet()) {
+                
                 uriParams.put("Item." + itemCount + ".Attribute." + count + ".Name", x.getKey());
                 uriParams.put("Item." + itemCount + ".Attribute." + count + ".Value", x.getValue());
 
-                if (replace != null && replace.contains(x.getKey()))
+                if (replace != null && replace.contains(x.getKey())) {
                     uriParams.put("Item." + itemCount + ".Attribute." + count + ".Replace", "true");
-
+                }
+                
                 ++count;
             }
 
@@ -380,9 +383,7 @@ public class SimpleDB {
         return domainName;
     }
 
-    
-    
-    
+
     /*
      * The PutAttributes operation creates or replaces attributes in an item. You specify new 
      * attributes using a combination of the Attribute.X.Name and Attribute.X.Value parameters. 
@@ -394,6 +395,10 @@ public class SimpleDB {
     }
     
     public String putAttributes(String domainName, String itemName, Map<String, String> map, Set<String> replace) throws IOException, AWSException, InterruptedException {
+        return putAttributes(domainName, itemName, map, replace, null, null, false);
+    }
+
+    public String putAttributes(String domainName, String itemName, Map<String, String> map, Set<String> replace, String condAttrName, String condAttrValue, boolean condAttrMustExist) throws IOException, AWSException, InterruptedException {
         Map<String, String> uriParams = createStandardParams("PutAttributes");
         uriParams.put("DomainName", domainName);
         uriParams.put("ItemName", itemName);
@@ -403,9 +408,19 @@ public class SimpleDB {
             uriParams.put("Attribute." + count + ".Name", x.getKey());
             uriParams.put("Attribute." + count + ".Value", x.getValue());
 
-            if (replace != null && replace.contains(x.getKey()))
+            if (replace != null && replace.contains(x.getKey())) {
                 uriParams.put("Attribute." + count + ".Replace", "true");
-
+            }
+            
+            if ((condAttrName != null) && (condAttrName.equals(x.getKey()))) {
+                uriParams.put("Expected." + count + ".Name", condAttrName);
+                uriParams.put("Expected." + count + ".Exists", "" + condAttrMustExist);
+                
+                if (condAttrMustExist) {
+                    uriParams.put("Expected." + count + ".Value", condAttrValue);
+                }
+            }
+            
             ++count;
         }
 
