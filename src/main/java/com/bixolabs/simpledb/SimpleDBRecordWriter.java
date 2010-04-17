@@ -88,6 +88,7 @@ public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
         
         private final String _shardName;
         private final SimpleDB _sdb;
+        
         private Map<String, Map<String, String>> _queue;
 
         public SdbShardWriter(SimpleDB sdb, String shardName) {

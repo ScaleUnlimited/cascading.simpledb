@@ -169,6 +169,8 @@ public class SimpleDBUtils {
 
         // TODO KKr - seems like the select call will keep returning results past what
         // we specified with the limit parameter...verify that this is the expected behavior.
+        // I think the fix is to reduce the limit by the returned count, each time through
+        // the loop.
         do {
             List<Map<String, String[]>> selectResult = sdb.select(selectStr, nextToken);
             nextToken = sdb.getLastToken();
