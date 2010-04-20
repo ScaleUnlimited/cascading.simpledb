@@ -91,7 +91,7 @@ public class BackoffHttpHandler implements IHttpHandler {
     private static final int MAX_HTTP_REDIRECTS = 1;
     private static final int MAX_HTTP_RETRIES = 5;
 
-    private static final int MAX_AWS_RETRIES = 3;
+    private static final int MAX_AWS_RETRIES = 5;
     
     private static final String SSL_CONTEXT_NAMES[] = {
         "TLS",
