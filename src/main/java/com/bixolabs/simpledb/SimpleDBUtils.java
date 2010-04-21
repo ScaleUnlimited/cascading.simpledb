@@ -59,8 +59,22 @@ public class SimpleDBUtils {
      * @return total shards, or -1 if domain name format isn't valid.
      */
     public static int getShardCount(String domain) {
+        return getShardCount(null, domain);
+    }
+
+    /**
+     * Given a domain name, return the total shard count (n from x-of-n pattern)
+     * 
+     * @param table table name
+     * @param domain domain name
+     * @return total shards, or -1 if domain name format isn't valid.
+     */
+    public static int getShardCount(String table, String domain) {
         Matcher m = DOMAIN_NAME_PATTERN.matcher(domain);
         if (!m.matches()) {
+            return -1;
+        } else if ((table != null) && !table.equals(m.group(1))) {
+            // Case of table = x, and domain is x-y-1-of-3
             return -1;
         } else {
             return Integer.parseInt(m.group(3));
@@ -74,8 +88,22 @@ public class SimpleDBUtils {
      * @return shard number, or -1 if domain name format isn't valid.
      */
     public static int getShardNumber(String domain) {
+        return getShardNumber(null, domain);
+    }
+
+    /**
+     * Given a domain name, return the shard number (1..n)
+     * 
+     * @param table table name
+     * @param domain domain name
+     * @return shard number, or -1 if domain name format isn't valid.
+     */
+    public static int getShardNumber(String table, String domain) {
         Matcher m = DOMAIN_NAME_PATTERN.matcher(domain);
         if (!m.matches()) {
+            return -1;
+        } else if ((table != null) && !table.equals(m.group(1))) {
+            // Case of table = x, and domain is x-y-1-of-3
             return -1;
         } else {
             return Integer.parseInt(m.group(2));
@@ -89,8 +117,8 @@ public class SimpleDBUtils {
         List<String> domains = sdb.listDomains();
         for (String domain : domains) {
             if (domain.startsWith(table)) {
-                int totalShards = getShardCount(domain);
-                int shardNumber = getShardNumber(domain);
+                int totalShards = getShardCount(table, domain);
+                int shardNumber = getShardNumber(table, domain);
                 
                 if ((totalShards != -1) && (shardNumber != -1)) {
                     if (numShards == 0) {
