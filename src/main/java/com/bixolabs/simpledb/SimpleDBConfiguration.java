@@ -24,6 +24,8 @@ import cascading.util.Util;
 
 public class SimpleDBConfiguration {
         
+    public static final int DEFAULT_MAX_THREADS = 100;
+
     private static final String DOMAIN_NAME_PROPERTY = makePropertyName("domainName");
     private static final String NUM_SHARDS_PROPERTY = makePropertyName("numShards");
     private static final String SCHEME_FIELDS_PROPERTY = makePropertyName("schemeFields");
@@ -32,6 +34,7 @@ public class SimpleDBConfiguration {
     private static final String ACCESS_KEY_ID_PROPERTY = makePropertyName("accessKeyId");
     private static final String SECRET_ACCESS_KEY_PROPERTY = makePropertyName("secretAccessKey");
     private static final String SELECT_LIMIT_PROPERTY = makePropertyName("selectLimit");
+    private static final String MAX_THREADS_PROPERTY = makePropertyName("maxThreads");
     
     private JobConf _conf;
     
@@ -101,6 +104,14 @@ public class SimpleDBConfiguration {
     
     public int getSelectLimit() {
         return _conf.getInt(SELECT_LIMIT_PROPERTY, SimpleDBUtils.NO_SELECT_LIMIT);
+    }
+    
+    public void setMaxThreads(int maxThreads) {
+        _conf.setInt(MAX_THREADS_PROPERTY, maxThreads);
+    }
+    
+    public int getMaxThreads() {
+        return _conf.getInt(MAX_THREADS_PROPERTY, DEFAULT_MAX_THREADS);
     }
     
     private static String safeSerializeBase64(Object o) {

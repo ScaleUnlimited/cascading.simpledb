@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -91,7 +92,9 @@ public class BackoffHttpHandler implements IHttpHandler {
     private static final int MAX_HTTP_REDIRECTS = 1;
     private static final int MAX_HTTP_RETRIES = 5;
 
-    private static final int MAX_AWS_RETRIES = 5;
+    private static final long MAX_AWS_BACKOFF = 100000L;
+    private static final double AWS_BACKOFF_RANDOM_PERCENT = 0.2;
+    private static final int MAX_AWS_RETRIES = 10;
     
     private static final String SSL_CONTEXT_NAMES[] = {
         "TLS",
@@ -185,6 +188,7 @@ public class BackoffHttpHandler implements IHttpHandler {
     }
     
     private DefaultHttpClient _httpClient;
+    private Random _random;
     
     public BackoffHttpHandler() {
         this(DEFAULT_MAX_THREADS);
@@ -192,6 +196,7 @@ public class BackoffHttpHandler implements IHttpHandler {
 
     public BackoffHttpHandler(int maxThreads) {
         _httpClient = createClient(maxThreads);
+        _random = new Random(System.currentTimeMillis());
     }
 
     @Override
@@ -250,7 +255,10 @@ public class BackoffHttpHandler implements IHttpHandler {
                     if (numRetries > MAX_AWS_RETRIES) {
                         throw e;
                     } else {
-                        long delay = (long) (Math.pow(4, numRetries) * 100L);
+                        // Calculate an increasing delay, capped at a max value, that randomly varies so we don't
+                        // keep re-hitting the server at roughly the same time.
+                        double targetDelay = Math.min(Math.pow(4.0, numRetries) * 100L, MAX_AWS_BACKOFF);
+                        long delay = (long)(targetDelay * (1.0 + (_random.nextDouble() * AWS_BACKOFF_RANDOM_PERCENT)));
                         LOGGER.debug("Retriable error detected, will retry in " + delay + "ms, attempt number: " + numRetries);
                         Thread.sleep(delay);
                     }

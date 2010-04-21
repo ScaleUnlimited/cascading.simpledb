@@ -41,7 +41,9 @@ import com.bixolabs.aws.SimpleDB;
 public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
     private static final Logger LOGGER = Logger.getLogger(SimpleDBRecordWriter.class);
     
-    private static final int NUM_THREADS = 100;
+    
+    // This value must be less than the Hadoop job timeout value, as otherwise the
+    // job could get killed while waiting for a request to get handled.
     private static final long REJECTED_EXECUTION_TIMEOUT = 300 * 1000L;
     private static final long TERMINATION_TIMEOUT = REJECTED_EXECUTION_TIMEOUT;
 
@@ -142,8 +144,8 @@ public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
         _shardWriters = new SdbShardWriter[_numShards];
         
         // One handler gets shared across all shards, but it's multi-threaded
-        IHttpHandler httpHandler = new BackoffHttpHandler(NUM_THREADS);
-        _executor = new ThreadedExecutor(NUM_THREADS, REJECTED_EXECUTION_TIMEOUT);
+        IHttpHandler httpHandler = new BackoffHttpHandler(sdbConf.getMaxThreads());
+        _executor = new ThreadedExecutor(sdbConf.getMaxThreads(), REJECTED_EXECUTION_TIMEOUT);
 
         LOGGER.trace(String.format("Creating shard writers for %d shards of table %s", _numShards, _domainName));
         

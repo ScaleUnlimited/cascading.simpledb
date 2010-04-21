@@ -58,6 +58,7 @@ public class SimpleDBTap extends Tap {
     private String _baseDomainName;
     private int _numShards;
     private SinkMode _sinkMode;
+    private int _maxThreads = SimpleDBConfiguration.DEFAULT_MAX_THREADS;
     
     private transient SimpleDB _sdb;
 
@@ -75,6 +76,24 @@ public class SimpleDBTap extends Tap {
         _sinkMode = sinkMode;
     }
 
+    /**
+     * Set the max number of threads per record writer.
+     * 
+     * This is an advanced feature that lets users constrain the number of threads hitting
+     * SimpleDB, in order to minimize 503/service unavailable errors. For this to have any
+     * real value, the caller should set this based on the max number of simultaneous jobs
+     * that use SimpleDB for input or output.
+     * 
+     * @param maxThreads maximum number of simultaneous HTTP requests to SimpleDB, per record writer
+     */
+    public void setMaxThreads(int maxThreads) {
+        _maxThreads = maxThreads;
+    }
+    
+    public int getMaxThreads() {
+        return _maxThreads;
+    }
+    
     public Path getPath() {
         return new Path(getURI().toString());
     }
@@ -217,6 +236,7 @@ public class SimpleDBTap extends Tap {
         sdbConf.setSecretAccessKey(_secretAccessKey);
         sdbConf.setDomainName(_baseDomainName);
         sdbConf.setNumShards(_numShards);
+        sdbConf.setMaxThreads(_maxThreads);
     }
 
     private URI getURI() {
