@@ -112,13 +112,13 @@ public class SimpleDBIntegrationTest {
         _sdb.createDomain(TestUtils.TEST_DOMAIN_NAME);
 
         Map<String, String> attributes = new HashMap<String, String>();
-        attributes.put("attr1", "item1-attr1-value1");
+        attributes.put("attr1", "item1-attr1-<&;>-value1");
 
         _sdb.putAttributes(TestUtils.TEST_DOMAIN_NAME, "item1", attributes);
 
         String[] result = _sdb.getAttribute(TestUtils.TEST_DOMAIN_NAME, "item1", "attr1", true);
         assertEquals(1, result.length);
-        assertEquals("item1-attr1-value1", result[0]);
+        assertEquals("item1-attr1-<&;>-value1", result[0]);
     }
     
     @Test

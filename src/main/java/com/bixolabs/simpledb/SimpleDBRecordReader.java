@@ -28,6 +28,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.bixolabs.aws.BackoffHttpHandler;
+import com.bixolabs.aws.IHttpHandler;
 import com.bixolabs.aws.SimpleDB;
 
 public class SimpleDBRecordReader implements RecordReader<NullWritable, Tuple> {
@@ -56,8 +58,9 @@ public class SimpleDBRecordReader implements RecordReader<NullWritable, Tuple> {
         _itemFieldName = sdbConf.getItemFieldName();
         _query = sdbConf.getQuery();
         _selectLimit = sdbSplit.getSelectLimit();
-        
-        _sdb = new SimpleDB(sdbConf.getAccessKeyId(), sdbConf.getSecretAccessKey());
+
+        IHttpHandler httpHandler = new BackoffHttpHandler(sdbConf.getMaxThreads());
+        _sdb = new SimpleDB(sdbConf.getAccessKeyId(), sdbConf.getSecretAccessKey(), httpHandler);
         _nextToken = null;
         _curItems = null;
         
