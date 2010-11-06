@@ -48,11 +48,11 @@ public class SimpleDB {
     private static final Logger LOGGER = Logger.getLogger(SimpleDB.class);
     
     public static final String TIMESTAMP_METADATA = "Timestamp";
+    public static final String DEFAULT_HOST = "sdb.amazonaws.com";
     
     private static final String SIGNATURE_METHOD = "HmacSHA1";
     private static final String API_VERSION = "2009-04-15";
     private static final String SIGNATURE_VERSION = "2";
-    private static final String DEFAULT_HOST = "sdb.amazonaws.com";
 
     /**
      * Implementation of IHttpHandler based on java.net.HttpURLConnection class.
@@ -630,7 +630,7 @@ public class SimpleDB {
 
     private String doSimplePost(Map<String, String> uriParams) throws IOException, AWSException, InterruptedException {
         try {
-            URL url = new URL("https://" + _httpEndPoint);
+            URL url = new URL(getProtocol() + _httpEndPoint);
             String response = _httpHandler.post(url, uriParams);
             processResponse(response);
             return response;
@@ -644,6 +644,16 @@ public class SimpleDB {
         }
     }
 
+    private String getProtocol() {
+        // Don't mind this hack - during testing, we want to use http for localhost requests, so
+        // that we don't need to handle https handshaking.
+        if (_httpEndPoint.equals("localhost") || _httpEndPoint.startsWith("localhost:")) {
+            return "http://";
+        } else {
+            return "https://";
+        }
+    }
+    
     /*
      * Retrieve the standard Response elements. Synchronize it so that in multithreaded
      * mode we can at least log a consistent set of values from the response.
@@ -751,7 +761,7 @@ public class SimpleDB {
     private URL getUrl(Map<String, String> uriParams) {
         StringBuilder sb = new StringBuilder(512);
 
-        sb.append("https://");
+        sb.append(getProtocol());
         sb.append(_httpEndPoint);
         sb.append("/?");
         

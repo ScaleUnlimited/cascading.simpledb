@@ -15,6 +15,11 @@
  */
 package com.bixolabs.simpledb;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,10 +30,6 @@ import java.util.Map;
 import org.apache.hadoop.mapred.JobConf;
 import org.junit.After;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import com.bixolabs.aws.SimpleDB;
-import com.bixolabs.aws.TestUtils;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -43,6 +44,8 @@ import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
 
+import com.bixolabs.aws.SimpleDB;
+import com.bixolabs.aws.TestUtils;
 
 public class SimpleDBTapIntegrationTest {
 
@@ -233,7 +236,7 @@ public class SimpleDBTapIntegrationTest {
         
         final int numItems = 2;
         
-        // Make sure both values are in the table now
+        // Make sure both values are in the table now.
         SimpleDB sdb = new SimpleDB(TestUtils.getAccessKeyID(), TestUtils.getSecretAccessKey());
         List<String> shardNames = SimpleDBUtils.getShardNames(domainName, numShards);
         assertEquals(1, shardNames.size());

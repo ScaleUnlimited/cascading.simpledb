@@ -150,7 +150,7 @@ public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
         LOGGER.trace(String.format("Creating shard writers for %d shards of table %s", _numShards, _domainName));
         
         for (int i = 0; i < _numShards; i++) {
-            SimpleDB sdb = new SimpleDB(sdbConf.getAccessKeyId(), sdbConf.getSecretAccessKey(), httpHandler);
+            SimpleDB sdb = new SimpleDB(sdbConf.getSdbHost(), sdbConf.getAccessKeyId(), sdbConf.getSecretAccessKey(), httpHandler);
             _shardWriters[i] = new SdbShardWriter(sdb, shardNames.get(i));
         }
         

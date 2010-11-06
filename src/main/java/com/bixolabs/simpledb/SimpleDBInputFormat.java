@@ -52,7 +52,7 @@ public class SimpleDBInputFormat implements InputFormat<NullWritable, Tuple>, Jo
         int remainingLimit = selectLimit;
 
         IHttpHandler httpHandler = new BackoffHttpHandler(numShards);
-        SimpleDB sdb = new SimpleDB(sdbConf.getAccessKeyId(), sdbConf.getSecretAccessKey(), httpHandler);
+        SimpleDB sdb = new SimpleDB(sdbConf.getSdbHost(), sdbConf.getAccessKeyId(), sdbConf.getSecretAccessKey(), httpHandler);
 
         // We want one split per shard.
         List<String> shardNames = SimpleDBUtils.getShardNames(domainName, numShards);
@@ -94,11 +94,6 @@ public class SimpleDBInputFormat implements InputFormat<NullWritable, Tuple>, Jo
         }
         
         return splits.toArray(new SimpleDBInputSplit[splits.size()]);
-    }
-
-    @Override
-    public void validateInput(JobConf conf) throws IOException {
-        // Do nothing - deprecated
     }
 
     @Override

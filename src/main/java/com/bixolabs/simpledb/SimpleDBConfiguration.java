@@ -35,6 +35,7 @@ public class SimpleDBConfiguration {
     private static final String SECRET_ACCESS_KEY_PROPERTY = makePropertyName("secretAccessKey");
     private static final String SELECT_LIMIT_PROPERTY = makePropertyName("selectLimit");
     private static final String MAX_THREADS_PROPERTY = makePropertyName("maxThreads");
+    private static final String SDB_HOST_PROPERTY = makePropertyName("sdbHost");
     
     private JobConf _conf;
     
@@ -112,6 +113,14 @@ public class SimpleDBConfiguration {
     
     public int getMaxThreads() {
         return _conf.getInt(MAX_THREADS_PROPERTY, DEFAULT_MAX_THREADS);
+    }
+    
+    public void setSdbHost(String sdbHost) {
+        _conf.set(SDB_HOST_PROPERTY, sdbHost);
+    }
+    
+    public String getSdbHost() {
+        return _conf.get(SDB_HOST_PROPERTY);
     }
     
     private static String safeSerializeBase64(Object o) {

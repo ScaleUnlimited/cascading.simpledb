@@ -59,6 +59,7 @@ public class SimpleDBTap extends Tap {
     private int _numShards;
     private SinkMode _sinkMode;
     private int _maxThreads = SimpleDBConfiguration.DEFAULT_MAX_THREADS;
+    private String _sdbHost = SimpleDB.DEFAULT_HOST;
     
     private transient SimpleDB _sdb;
 
@@ -92,6 +93,15 @@ public class SimpleDBTap extends Tap {
     
     public int getMaxThreads() {
         return _maxThreads;
+    }
+    
+    public void setSdbHost(String sdbHost) {
+        _sdbHost = sdbHost;
+        _sdb = null;
+    }
+    
+    public String getSdbHost() {
+        return _sdbHost;
     }
     
     public Path getPath() {
@@ -224,7 +234,9 @@ public class SimpleDBTap extends Tap {
     
     private SimpleDB getSimpleDB() {
         if (_sdb == null) {
-            _sdb = new SimpleDB(_accessKeyId, _secretAccessKey, new BackoffHttpHandler(_numShards));
+            // Use the number of shards as the count for number of threads, since at the tap level
+            // we can't parallelize more than that.
+            _sdb = new SimpleDB(_sdbHost, _accessKeyId, _secretAccessKey, new BackoffHttpHandler(_numShards));
         }
         
         return _sdb;
@@ -237,6 +249,7 @@ public class SimpleDBTap extends Tap {
         sdbConf.setDomainName(_baseDomainName);
         sdbConf.setNumShards(_numShards);
         sdbConf.setMaxThreads(_maxThreads);
+        sdbConf.setSdbHost(_sdbHost);
     }
 
     private URI getURI() {

@@ -230,6 +230,18 @@ public class SimpleDBUtils {
         return result;
     }
     
+    public static void deleteTable(SimpleDB sdb, String table) throws IOException, AWSException, InterruptedException {
+        List<String> domains = sdb.listDomains();
+        for (String domain : domains) {
+            if (domain.startsWith(table)) {
+                try {
+                    sdb.deleteDomain(domain);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
+    }
     
     private static int joaat_hash(String key) {
         try {
