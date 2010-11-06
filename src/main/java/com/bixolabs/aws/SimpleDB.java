@@ -42,6 +42,7 @@ import java.util.TreeMap;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 public class SimpleDB {
@@ -498,8 +499,10 @@ public class SimpleDB {
             String t = attributes.get(x);
 
             // TODO KKr - use xml parser here
-            String key = t.substring(t.indexOf("<Name>") + 6, t.indexOf("</Name>"));
-            String val = t.substring(t.indexOf("<Value>") + 7, t.indexOf("</Value>"));
+            String xmlEscapedKey = t.substring(t.indexOf("<Name>") + 6, t.indexOf("</Name>"));
+            String xmlEscapedVal = t.substring(t.indexOf("<Value>") + 7, t.indexOf("</Value>"));
+            String key = StringEscapeUtils.unescapeXml(xmlEscapedKey);
+            String val = StringEscapeUtils.unescapeXml(xmlEscapedVal);
             
             if (m.containsKey(key)){
                 String[] oldA = m.get(key);
@@ -586,15 +589,19 @@ public class SimpleDB {
             Map<String, String[]> map = new HashMap<String, String[]>();
 
             List<String> nameId = _xmlParser.getElements(i, "Name");
-            map.put("ItemName", new String[]{nameId.get(0).toString()});
+            String xmlEscapedName = nameId.get(0).toString();
+            String name = StringEscapeUtils.unescapeXml(xmlEscapedName);
+            map.put("ItemName", new String[]{name});
 
             List<String> attributes = _xmlParser.getElements(i, "Attribute");
             for (int xx = 0; xx < attributes.size(); xx++) {
                 String t = attributes.get(xx);
 
                 // TODO KKr - use xml parser
-                String key = t.substring(t.indexOf("<Name>") + 6, t.indexOf("</Name>"));
-                String val = t.substring(t.indexOf("<Value>") + 7, t.indexOf("</Value>"));
+                String xmlEscapedKey = t.substring(t.indexOf("<Name>") + 6, t.indexOf("</Name>"));
+                String xmlEscapedVal = t.substring(t.indexOf("<Value>") + 7, t.indexOf("</Value>"));
+                String key = StringEscapeUtils.unescapeXml(xmlEscapedKey);
+                String val = StringEscapeUtils.unescapeXml(xmlEscapedVal);
                 
                 if (map.containsKey(key)) {
                     String[] oldA = map.get(key);

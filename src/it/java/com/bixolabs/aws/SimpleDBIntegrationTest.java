@@ -111,14 +111,17 @@ public class SimpleDBIntegrationTest {
     public void testAttributeReadWrite() throws Exception {
         _sdb.createDomain(TestUtils.TEST_DOMAIN_NAME);
 
+        // validate XML unescaping by forcing key/value names to be escaped
         Map<String, String> attributes = new HashMap<String, String>();
-        attributes.put("attr1", "item1-attr1-value1");
+        attributes.put("attr1", "item1-attr1-<&;>-value1");
+        attributes.put("attr2", "item1-attr2-<&;>-value2");
 
         _sdb.putAttributes(TestUtils.TEST_DOMAIN_NAME, "item1", attributes);
 
-        String[] result = _sdb.getAttribute(TestUtils.TEST_DOMAIN_NAME, "item1", "attr1", true);
-        assertEquals(1, result.length);
-        assertEquals("item1-attr1-value1", result[0]);
+        Map<String, String[]> result = _sdb.getAttributes(TestUtils.TEST_DOMAIN_NAME, "item1", true);
+        assertEquals(2, result.size());
+        assertEquals("item1-attr1-<&;>-value1", result.get("attr1")[0]);
+        assertEquals("item1-attr2-<&;>-value2", result.get("attr2")[0]);
     }
     
     @Test
