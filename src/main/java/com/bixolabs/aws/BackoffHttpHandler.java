@@ -92,7 +92,7 @@ public class BackoffHttpHandler implements IHttpHandler {
     private static final int MAX_HTTP_REDIRECTS = 1;
     private static final int MAX_HTTP_RETRIES = 5;
 
-    private static final long MAX_AWS_BACKOFF = 100000L;
+    private static final long MAX_AWS_BACKOFF = 10000L;
     private static final double AWS_BACKOFF_RANDOM_PERCENT = 0.2;
     private static final int MAX_AWS_RETRIES = 10;
     
@@ -257,7 +257,7 @@ public class BackoffHttpHandler implements IHttpHandler {
                     } else {
                         // Calculate an increasing delay, capped at a max value, that randomly varies so we don't
                         // keep re-hitting the server at roughly the same time.
-                        double targetDelay = Math.min(Math.pow(4.0, numRetries) * 100L, MAX_AWS_BACKOFF);
+                        double targetDelay = Math.min(Math.pow(4.0, numRetries) * 20L, MAX_AWS_BACKOFF);
                         long delay = (long)(targetDelay * (1.0 + (_random.nextDouble() * AWS_BACKOFF_RANDOM_PERCENT)));
                         LOGGER.debug("Retriable error detected, will retry in " + delay + "ms, attempt number: " + numRetries);
                         Thread.sleep(delay);
@@ -379,7 +379,6 @@ public class BackoffHttpHandler implements IHttpHandler {
         } else {
             LOGGER.warn("No valid SSLContext found for https");
         }
-
 
         // Use ThreadSafeClientConnManager since more than one thread will be using the HttpClient.
         ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(params, schemeRegistry);
