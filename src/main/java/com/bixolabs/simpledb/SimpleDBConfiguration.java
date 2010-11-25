@@ -23,9 +23,9 @@ import cascading.tuple.Fields;
 import cascading.util.Util;
 
 public class SimpleDBConfiguration {
-        
-    public static final int DEFAULT_MAX_THREADS = 100;
-
+    
+    public static final long DEFAULT_CLOSE_TIMEOUT = 300 * 1000L;
+    
     private static final String DOMAIN_NAME_PROPERTY = makePropertyName("domainName");
     private static final String NUM_SHARDS_PROPERTY = makePropertyName("numShards");
     private static final String SCHEME_FIELDS_PROPERTY = makePropertyName("schemeFields");
@@ -36,6 +36,7 @@ public class SimpleDBConfiguration {
     private static final String SELECT_LIMIT_PROPERTY = makePropertyName("selectLimit");
     private static final String MAX_THREADS_PROPERTY = makePropertyName("maxThreads");
     private static final String SDB_HOST_PROPERTY = makePropertyName("sdbHost");
+    private static final String CLOSE_TIMEOUT_PROPERTY = makePropertyName("closeTimeout");
     
     private JobConf _conf;
     
@@ -112,7 +113,7 @@ public class SimpleDBConfiguration {
     }
     
     public int getMaxThreads() {
-        return _conf.getInt(MAX_THREADS_PROPERTY, DEFAULT_MAX_THREADS);
+        return _conf.getInt(MAX_THREADS_PROPERTY, getNumShards());
     }
     
     public void setSdbHost(String sdbHost) {
@@ -121,6 +122,14 @@ public class SimpleDBConfiguration {
     
     public String getSdbHost() {
         return _conf.get(SDB_HOST_PROPERTY);
+    }
+    
+    public void setCloseTimeout(long closeTimeout) {
+        _conf.setLong(CLOSE_TIMEOUT_PROPERTY, closeTimeout);
+    }
+    
+    public long getCloseTimeout() {
+        return _conf.getLong(CLOSE_TIMEOUT_PROPERTY, DEFAULT_CLOSE_TIMEOUT);
     }
     
     private static String safeSerializeBase64(Object o) {
