@@ -80,6 +80,18 @@ public class SimpleDBTapTest {
         Assert.assertFalse(tap1.equals(tap3));
     }
     
+    @Test
+    public void testMaxThreads() throws Exception {
+        final int numShards = 1;
+        SimpleDBScheme scheme = new SimpleDBScheme(new Fields("a"), new Fields("a"));
+        SimpleDBTap tap = new SimpleDBTap(scheme, "accessKey", "secretKey", "baseDomainName", numShards, SinkMode.KEEP);
+        
+        Assert.assertEquals(numShards, tap.getMaxThreads());
+        
+        tap.setMaxThreads(10);
+        Assert.assertEquals(10, tap.getMaxThreads());
+    }
+    
     // TODO KKr - reenable when issue with Jetty failing is resolved.
     // @Test
     public void testTooBusyHandling() throws Exception {
