@@ -44,8 +44,8 @@ public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
     
     // This value must be less than the Hadoop job timeout value, as otherwise the
     // job could get killed while waiting for a request to get handled.
-    private static final long REJECTED_EXECUTION_TIMEOUT = 300 * 1000L;
-    private static final long TERMINATION_TIMEOUT = REJECTED_EXECUTION_TIMEOUT;
+//    private static final long REJECTED_EXECUTION_TIMEOUT = 300 * 1000L;
+//    private static final long TERMINATION_TIMEOUT = REJECTED_EXECUTION_TIMEOUT;
 
     private static final int BATCH_WRITE_SIZE = 25;
 
@@ -130,6 +130,7 @@ public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
     private Fields _schemeFields;
     private String _itemFieldName;
     private List<IOException> _exceptions;
+    private long _closeTimeout;
     
     private SdbShardWriter[] _shardWriters;
     private ThreadedExecutor _executor;
@@ -139,13 +140,14 @@ public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
         _numShards = sdbConf.getNumShards();
         _schemeFields = sdbConf.getSchemeFields();
         _itemFieldName = sdbConf.getItemFieldName();
-
+        _closeTimeout = sdbConf.getCloseTimeout();
+        
         List<String> shardNames = SimpleDBUtils.getShardNames(_domainName, _numShards);
         _shardWriters = new SdbShardWriter[_numShards];
         
         // One handler gets shared across all shards, but it's multi-threaded
         IHttpHandler httpHandler = new BackoffHttpHandler(sdbConf.getMaxThreads());
-        _executor = new ThreadedExecutor(sdbConf.getMaxThreads(), REJECTED_EXECUTION_TIMEOUT);
+        _executor = new ThreadedExecutor(sdbConf.getMaxThreads(), _closeTimeout);
 
         LOGGER.trace(String.format("Creating shard writers for %d shards of table %s", _numShards, _domainName));
         
@@ -191,7 +193,7 @@ public class SimpleDBRecordWriter implements RecordWriter<NullWritable, Tuple> {
         }
         
         try {
-            if (!_executor.terminate(TERMINATION_TIMEOUT)) {
+            if (!_executor.terminate(_closeTimeout)) {
                 String msg = "Had to do a hard termination of async writes to SimpleDB";
                 LOGGER.warn(msg);
                 _exceptions.add(new IOException(msg));
